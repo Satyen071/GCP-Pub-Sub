@@ -1,0 +1,36 @@
+# This values file is for running helm locally.
+# Kubernetes Configuration
+namespace: sdm-daylight-dev
+
+certificate:
+  name: sdm-daylight-cert-dev
+  secretName: sdm-daylight-dev-certs
+
+
+
+deployment:
+  # Replicas refers to the desired number of pods we want to have running at all times.
+  replicas: 1
+  image: "gcr.io/ld-sdm-daylight-dev/form-ingestion-publisher-dev"
+
+
+# Gateway
+istioGateway:
+  namespace: sdm-daylight-dev
+  host: sdm-formservice-dev.banting.lblw.cloud
+
+# Virtual Service
+virtualService:
+  destination: form-api-service.sdm-daylight-dev.svc.cluster.local
+
+envMap:
+  KEY_ID: sdm-form-ingestion-key-dev
+  KEY_RING: sdm-form-ingestion-keyring-dev
+  TOPIC_ID: sdm-form-data-ingestion-topic
+  PROJECT_ID: ld-sdm-daylight-dev
+  LOCATION_ID: global
+
+dnsNames:
+  - sdm-formservice-dev.api.banting.lblw.cloud
+
+

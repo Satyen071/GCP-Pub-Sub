@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ include "form.fullname" . }}
+  labels:
+    {{- include "form.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      {{- include "form.applabel" . | nindent 6 }}
+      {{- include "form.selectorLabels" . | nindent 6 }}
+      {{- toYaml .Values.pod.labels | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "form.applabel" . | nindent 8 }}
+        {{- include "form.selectorLabels" . | nindent 8 }}
+        {{- toYaml .Values.pod.labels | nindent 8 }}
+      annotations:
+        {{- if not .Values.prometheus.enabled }}
+        {{- include "form.victoriametrics" . | nindent 8 }}
+        {{- end }}
+    spec:
+      containers:
+      - name: {{ .Values.deployment.app }}
+        image: {{ .Values.deployment.image }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.deployment.imagePullPolicy }}
+        volumeMounts:
+          - name: {{ .Values.volumes.name }}
+            mountPath: {{ .Values.volumes.mountPath }} 
+        env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: "{{ .Values.volumes.mountPath }}{{ .Values.secrets.key }}"
+          - name: PROJECT_ID
+            value: {{ .Values.envMap.PROJECT_ID }}
+          - name: KEY_ID
+            value: {{ .Values.envMap.KEY_ID }}
+          - name: KEY_RING
+            value: {{ .Values.envMap.KEY_RING }}
+          - name: TOPIC_ID
+            value: {{ .Values.envMap.TOPIC_ID }}
+          - name: LOCATION_ID
+            value: {{ .Values.envMap.LOCATION_ID }}
+        resources:
+          {{- toYaml .Values.deployment.resources | nindent 10 }}
+        ports:
+        - containerPort: {{ .Values.deployment.containerPort }}
+      volumes:
+      {{- include "form.volume" . | nindent 6 }}
+     

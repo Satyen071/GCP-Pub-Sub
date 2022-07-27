@@ -1,0 +1,53 @@
+# This values file is for running helm locally.
+# Kubernetes Configuration
+namespace: sdm-daylight-prod
+
+certificate:
+  name: sdm-daylight-cert-prod
+  secretName: sdm-daylight-prod-certs
+
+
+
+deployment:
+  # Replicas refers to the desired number of pods we want to have running at all times.
+  replicas: 1
+  image: "gcr.io/ld-sdm-daylight-prod/form-ingestion-publisher-prod"
+  # Roll
+
+  # Resources
+  # resources:
+  #   limits:
+  #     cpu: 4
+  #     memory: Gi
+  #   requests:
+  #     cpu: 1
+  #     memory: 2Gi
+
+# Autoscaling
+#autoscaler:
+#  name: autoscaler
+#  enable: true
+#  minReplicas: 3
+#  maxReplicas: 10
+#  cpuUtilization: 40
+
+# Gateway
+istioGateway:
+  namespace: sdm-daylight-prod
+  host: sdm-formservice-prod.banting.lblw.cloud
+
+# Virtual Service
+virtualService:
+  destination: form-api-service.sdm-daylight-prod.svc.cluster.local
+
+envMap:
+  KEY_ID: sdm-form-ingestion-key-prod
+  KEY_RING: sdm-form-ingestion-keyring-prod
+  TOPIC_ID: sdm-form-data-ingestion-topic
+  PROJECT_ID: ld-sdm-daylight-prod
+  LOCATION_ID: global
+
+dnsNames:
+  - sdm-formservice-prod.api.banting.lblw.cloud
+
+

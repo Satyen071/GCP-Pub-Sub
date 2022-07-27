@@ -1,0 +1,18 @@
+{{- if .Values.certificate.required }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.certificate.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: {{ .Values.certificate.secretName }}  # A secret name in the same namespace that holds the actual certs (tls.key and tls.crt)
+  issuerRef:
+    # The issuer already created
+    name: letsencrypt #Do not change
+    kind: ClusterIssuer
+  dnsNames:
+  {{- range .Values.dnsNames }}
+  - {{ . }}
+  {{- end }}
+  {{- end }}
+

@@ -1,0 +1,15 @@
+{{- if .Values.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    prometheus: {{ .Release.Namespace }}
+  name: {{ .Values.prometheus.serviceMonitor.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  endpoints:
+  {{- toYaml .Values.prometheus.podMonitor.podMetricsEndpoints | nindent 2 }}
+  selector:
+    matchLabels:
+      {{- toYaml .Values.service.labels | nindent 6 }}
+{{- end }}

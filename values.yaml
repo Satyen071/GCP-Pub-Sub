@@ -1,0 +1,142 @@
+# This values file is for running helm locally.
+# Kubernetes Configuration
+namespace: sdm-daylight-dev
+
+certificate:
+  required: True
+  name: sdm-daylight-cert-dev
+  secretName: sdm-daylight-dev-certs
+
+# Service
+service:
+  labels:
+    name: form-api-svc
+  enable: true
+  port: 8081
+  name: form-api-service
+  type: ClusterIP
+  targetPort: 8081
+  portName: http
+  portProtocol: TCP
+
+
+# Secrets for SA key
+secrets:
+  name: 
+  key: PUBSUB_SA.json
+
+# Secret key volume
+volumes:
+  name: gcp-key
+  mountPath: /app/cred/
+  secret:
+    secretName: 
+    defaultMode: 420
+
+
+nameOverride: ""
+fullnameOverride: ""
+# Deployment
+
+# Monitoring or App label
+app: 
+
+
+#podConfigs
+pod:
+  annotations: {}
+  labels:
+    type: pubsub-publisher
+
+
+
+deployment:
+  # Replicas refers to the desired number of pods we want to have running at all times.
+  replicas: 1
+  app: form-api-ingestion-service
+
+  # Mention full image path to deploy on GKE cluster
+  # image: "gcr.io/ld-sdm-daylight-prod/form-ingestion-publisher-dev"
+  
+  imagePullPolicy: Always
+  # Rolling Update
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 2
+
+  # Container Port
+  containerPort: 8081
+
+  #Volumes
+  # volumes:
+  # - name:
+
+# ## Resources
+#   resources:
+#     limits:
+#       cpu: 4
+#       memory: 3Gi
+#     requests:
+#       cpu: 1100m
+#       memory: 2176Mi
+
+# Autoscaling
+autoscaler:
+  name: autoscaler
+  enable: true
+  minReplicas: 10
+  maxReplicas: 20
+  cpuUtilization: 50
+
+image:
+  tag: 'latest'
+
+# Gateway
+istioGateway:
+  httpRouting: True
+  required: true
+  name: gial-lblw-dev-sdm-daylight
+  namespace: sdm-daylight-dev
+  host: sdm-formservice-dev.api.banting.lblw.cloud
+  portNumber: 80
+  portName: http
+  portProtocol: HTTP
+  httpsPortnumber: 443
+  httpsPortName: https
+  httpsPortProtocol: HTTPS
+  tlsMode: SIMPLE
+
+# Virtual Service
+virtualService:
+  enable: true
+  name: form-api-virtual-service
+  prefix: "/api/v1/form"
+  destination: form-api-service.sdm-daylight-dev.svc.cluster.local
+  port: 8081
+
+envMap:
+  KEY_ID: sdm-form-ingestion-key-dev
+  KEY_RING: sdm-form-ingestion-keyring-dev
+  TOPIC_ID: sdm-form-data-ingestion-topic
+  PROJECT_ID: ld-sdm-daylight-dev
+  LOCATION_ID: global
+
+dnsNames:
+  - sdm-formservice-dev.api.banting.lblw.cloud
+
+
+prometheus:
+  enabled: true
+  podMonitor:
+    name: form-ingestion-pod-monitor
+    podMetricsEndpoints:
+      - path: "/actuator/prometheus"
+        port: "http"
+  serviceMonitor:
+    name: form-ingestion-service-monitor
+
+
+victoriaMatrics:
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8081"
